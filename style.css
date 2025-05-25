@@ -1,0 +1,132 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f8fafa;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.logo span {
+  color: green;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: black;
+  font-weight: bold;
+}
+
+.dashboard {
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.button-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.btn {
+  padding: 10px 18px;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn.selected {
+  background-color: #1b5e20;
+}
+
+.image-container img {
+  width: 300px;
+  height: auto;
+  margin-top: 15px;
+  border: 2px solid #ccc;
+}
+
+/* 🎯 Bigger and cleaner charts */
+canvas {
+  max-width: 100%;
+  height: 400px !important;
+  margin: 40px auto;
+  display: block;
+}
+
+/* 📱 Mobile responsiveness */
+@media (max-width: 600px) {
+  .button-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 80%;
+    margin-bottom: 10px;
+  }
+
+  canvas {
+    height: 300px !important;
+  }
+}
+/* 🎯 Style for Date Range Form */
+.date-range-form {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.date-range-form input,
+.date-range-form button {
+  padding: 6px 10px;
+  margin: 0 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 🎯 Style for Live Values Panel */
+.live-values {
+  margin-top: 20px;
+  text-align: left;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #e3f2fd;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.live-values ul {
+  list-style: none;
+  padding: 0;
+}
+
+.live-values li {
+  margin: 5px 0;
+  font-size: 16px;
+}

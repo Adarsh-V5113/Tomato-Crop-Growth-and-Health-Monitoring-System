@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TomatoInsight Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">Tomato<span>Insight</span></div>
+    <ul class="nav-links">
+      <li><a href="#">About</a></li>
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">FAQ</a></li>
+    </ul>
+  </nav>
+
+  <section class="dashboard">
+    <h2>Select a Region & Plot</h2>
+      <form method="GET" action="/" class="date-range-form" style="margin: 20px auto;">
+        <label for="start_date"><strong>From:</strong></label>
+        <input type="date" name="start_date" required>
+        <label for="end_date"><strong>To:</strong></label>
+         <input type="date" name="end_date" required>
+         <button type="submit" style="padding: 6px 12px; margin-left: 10px;">Filter</button>
+      </form>
+
+    <div class="button-grid">
+      {% for label in mapping %}
+        <a href="/?selection={{ label }}">
+          <button class="btn {{ 'selected' if label == selected_key else '' }}">{{ label }}</button>
+        </a>
+      {% endfor %}
+    </div>
+
+    {% if image_path %}
+     <div class="image-container">
+       <h3>🖼️ Tomato Plant Image on Selected Date</h3>
+       <img src="{{ image_path }}" alt="Tomato Plant" />
+     </div>
+    {% endif %}
+
+
+    {% if data %}
+    <div class="graph-section">
+      <h3>📊 Sensor Graphs</h3>
+      <p><strong>Sensor Data for:</strong> {{ mapping[selected_key]["date"] }}</p>
+      <div class="live-values">
+  <h3>🔴 Live Sensor Snapshot (Latest)</h3>
+  <ul>
+    <li><strong>Temperature:</strong> {{ data[-1]['TEMPERATURE(°C)'] }}</li>
+    <li><strong>Humidity:</strong> {{ data[-1]['HUMIDITY(%)'] }}</li>
+    <li><strong>Soil pH:</strong> {{ data[-1]['SOIL pH'] }}</li>
+    <li><strong>Soil Moisture:</strong> {{ data[-1]['SOIL MOISTURE(%)'] }}</li>
+    <li><strong>Soil Temp:</strong> {{ data[-1]['SOIL TEMPERATURE(°C)'] }}</li>
+    <li><strong>Soil Conductivity:</strong> {{ data[-1]['SOIL CONDUCTIVITY(µS/cm)'] }}</li>
+    <li><strong>Nitrogen:</strong> {{ data[-1]['NITROGEN(ppm)'] }}</li>
+    <li><strong>Phosphorous:</strong> {{ data[-1]['PHOSPHOROUS(ppm)'] }}</li>
+    <li><strong>Potassium:</strong> {{ data[-1]['POTASSIUM(ppm)'] }}</li>
+  </ul>
+</div>
+
+
+      <canvas id="tempHumidityChart"></canvas>
+      <canvas id="phChart"></canvas>
+      <canvas id="moistureChart"></canvas>
+      <canvas id="soilTempChart"></canvas>
+      <canvas id="conductivityChart"></canvas>
+      <canvas id="npkChart"></canvas>
+    </div>
+
+    <script>
+      const labels = {{ data | map(attribute='Timestamp') | list | tojson }};
+      const temp = {{ data | map(attribute='TEMPERATURE(°C)') | list | tojson }};
+      const humidity = {{ data | map(attribute='HUMIDITY(%)') | list | tojson }};
+      const ph = {{ data | map(attribute='SOIL pH') | list | tojson }};
+      const moisture = {{ data | map(attribute='SOIL MOISTURE(%)') | list | tojson }};
+      const soilTemp = {{ data | map(attribute='SOIL TEMPERATURE(°C)') | list | tojson }};
+      const conductivity = {{ data | map(attribute='SOIL CONDUCTIVITY(µS/cm)') | list | tojson }};
+      const nitrogen = {{ data | map(attribute='NITROGEN(ppm)') | list | tojson }};
+      const phosphorous = {{ data | map(attribute='PHOSPHOROUS(ppm)') | list | tojson }};
+      const potassium = {{ data | map(attribute='POTASSIUM(ppm)') | list | tojson }};
+
+      const chartOptions = (label, color) => ({
+        responsive: true,
+        scales: {
+          x: {
+            title: { display: true, text: 'Timestamp', font: { size: 16 } },
+            ticks: { font: { size: 14 } }
+          },
+          y: {
+            title: { display: true, text: label, font: { size: 16 } },
+            ticks: { font: { size: 14 } }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { font: { size: 14 } }
+          }
+        }
+      });
+
+      const createLineChart = (id, label, data, color) => {
+        new Chart(document.getElementById(id), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label,
+              data,
+              borderColor: color,
+              backgroundColor: color + '22',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2,
+              pointRadius: 3
+            }]
+          },
+          options: chartOptions(label, color)
+        });
+      };
+
+      new Chart(document.getElementById('tempHumidityChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Temperature (°C)',
+              data: temp,
+              borderColor: 'red',
+              backgroundColor: 'rgba(255, 0, 0, 0.2)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2
+            },
+            {
+              label: 'Humidity (%)',
+              data: humidity,
+              borderColor: 'blue',
+              backgroundColor: 'rgba(0, 0, 255, 0.2)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2
+            }
+          ]
+        },
+        options: chartOptions("Temperature / Humidity", 'red')
+      });
+
+      createLineChart('phChart', 'Soil pH', ph, 'green');
+      createLineChart('moistureChart', 'Soil Moisture (%)', moisture, 'orange');
+      createLineChart('soilTempChart', 'Soil Temperature (°C)', soilTemp, 'purple');
+      createLineChart('conductivityChart', 'Soil Conductivity (µS/cm)', conductivity, '#795548');
+
+      new Chart(document.getElementById('npkChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Nitrogen (ppm)', data: nitrogen, backgroundColor: '#d32f2f' },
+            { label: 'Phosphorous (ppm)', data: phosphorous, backgroundColor: '#1976d2' },
+            { label: 'Potassium (ppm)', data: potassium, backgroundColor: '#388e3c' }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              stacked: true,
+              title: { display: true, text: 'Timestamp', font: { size: 16 } },
+              ticks: { font: { size: 14 } }
+            },
+            y: {
+              stacked: true,
+              beginAtZero: true,
+              title: { display: true, text: 'NPK (ppm)', font: { size: 16 } },
+              ticks: { font: { size: 14 } }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { font: { size: 14 } }
+            }
+          }
+        }
+      });
+    </script>
+    {% endif %}
+  </section>
+</body>
+</html>
